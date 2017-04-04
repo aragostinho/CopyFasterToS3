@@ -16,7 +16,9 @@ namespace replicationToAmazonS3
 
             int _intOption = 1;
             _ActionList = new Dictionary<int, AbstractInterpreter>();
-            _ActionList.Add(1, ReplicationFactory.ObjectFolderToS3);
+            _ActionList.Add(1, ReplicationFactory.ParallelTransfer);
+            _ActionList.Add(2, ReplicationFactory.NonParallelTransfer);
+
 
             try
             {
