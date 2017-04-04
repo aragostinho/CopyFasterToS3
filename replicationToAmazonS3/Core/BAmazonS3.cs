@@ -53,7 +53,7 @@ namespace replicationToAmazonS3.Core
                     request.BucketName = _bucketname;
                     request.Key = keyname;
                     request.FilePath = pFilePath;
-                    using (var response = client.PutObject(request)) { };
+                    client.PutObject(request);
                 }
 
             }
@@ -79,8 +79,7 @@ namespace replicationToAmazonS3.Core
                     request.BucketName = _bucketname;
                     request.Key = keyname;
                     request.InputStream = pObject;
-                    using (var response = client.PutObject(request)) { };
-
+                    client.PutObject(request);
                 }
 
             }
