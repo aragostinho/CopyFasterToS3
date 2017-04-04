@@ -16,9 +16,7 @@ namespace replicationToAmazonS3.Core
             Parallel.ForEach(Directory.GetDirectories(localDir), dirPath =>
             {
                 string currentFolder = Path.GetFileName(dirPath);
-                string currentKey = cleanPath != null ? dirPath.Replace(cleanPath, string.Empty).Replace(@"\", "/") : dirPath.Replace(@"\", "/");
-
-                Console.WriteLine("Copying....");
+                string currentKey = cleanPath != null ? dirPath.Replace(cleanPath, string.Empty).Replace(@"\", "/") : dirPath.Replace(@"\", "/"); 
                 Parallel.ForEach(Directory.GetFiles(dirPath), filePath =>
                 {
                     string currentFile = Path.GetFileName(filePath);
@@ -33,10 +31,7 @@ namespace replicationToAmazonS3.Core
             foreach (string dirPath in Directory.GetDirectories(localDir))
             {
                 string currentFolder = Path.GetFileName(dirPath);
-                string currentKey = cleanPath != null ? dirPath.Replace(cleanPath, string.Empty).Replace(@"\", "/") : dirPath.Replace(@"\", "/");
-
-
-                Console.WriteLine("Copying....");
+                string currentKey = cleanPath != null ? dirPath.Replace(cleanPath, string.Empty).Replace(@"\", "/") : dirPath.Replace(@"\", "/"); 
                 foreach (string filePath in Directory.GetFiles(dirPath))
                 {
                     string currentFile = Path.GetFileName(filePath);
