@@ -9,12 +9,12 @@ namespace replicationToAmazonS3.ObjectsToReplication
     public static class ReplicationFactory
     {
 
-        private static CompanyFolder oCompanyFolder;
-        public static CompanyFolder CompanyFolderToS3
+        private static ObjectFolder oObjectFolder;
+        public static ObjectFolder ObjectFolderToS3
         {
             get
             {
-                return oCompanyFolder ?? (oCompanyFolder = new CompanyFolder());
+                return oObjectFolder ?? (oObjectFolder = new ObjectFolder());
             }
         }
 

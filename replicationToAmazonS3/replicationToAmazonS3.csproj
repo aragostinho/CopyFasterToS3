@@ -50,7 +50,7 @@
     <Compile Include="Core\BAmazonS3.cs" />
     <Compile Include="Core\IBAmazonS3.cs" />
     <Compile Include="Core\ReplicationToS3.cs" />
-    <Compile Include="ObjectsToReplication\CompanyFolder.cs" />
+    <Compile Include="ObjectsToReplication\ObjectFolder.cs" />
     <Compile Include="ObjectsToReplication\ReplicationFactory.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
