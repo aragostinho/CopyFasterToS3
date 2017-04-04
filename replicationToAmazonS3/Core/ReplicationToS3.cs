@@ -23,6 +23,7 @@ namespace replicationToAmazonS3.Core
                 {
                     string currentFile = Path.GetFileName(filePath);
                     pBAmazonS3.SaveObject(filePath, string.Format(@"{0}/{1}", currentKey, currentFile));
+                    Console.WriteLine(string.Format("File {0} copied", Path.GetFileName(filePath)));
                 });
                 ParallelRecursive(dirPath, pBAmazonS3, cleanPath);
             });
