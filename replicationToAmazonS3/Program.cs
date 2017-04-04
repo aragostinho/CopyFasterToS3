@@ -31,11 +31,7 @@ namespace replicationToAmazonS3
                 _ActionList[_intOption].Execute(args);
 
                 if (args.Length != 0)
-                    return;
-
-                Console.WriteLine("====================================================");
-                Console.WriteLine("============= PROCESS ACCOMPLISHED =================");
-                Console.WriteLine("====================================================");
+                    return; 
 
             }
             catch (Exception oException)

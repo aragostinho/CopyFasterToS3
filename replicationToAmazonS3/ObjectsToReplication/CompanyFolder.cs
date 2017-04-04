@@ -40,6 +40,7 @@ namespace replicationToAmazonS3.ObjectsToReplication
                     pElapsedTime.Milliseconds)
                );
 
+                string pressToFinish = Console.ReadLine();
 
             }
             catch (Exception oException)
