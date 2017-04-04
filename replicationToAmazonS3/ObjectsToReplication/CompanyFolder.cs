@@ -11,7 +11,7 @@ namespace replicationToAmazonS3.ObjectsToReplication
     public class CompanyFolder : AbstractInterpreter
     {
 
-        string fromFolder = @"C:\temp\samplefolder\";
+        string fromFolder = @"C:\rootfolder\";
         string toBucket = "magnadev";
 
         public override string Description()

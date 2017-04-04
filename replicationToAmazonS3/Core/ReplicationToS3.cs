@@ -20,7 +20,7 @@ namespace replicationToAmazonS3.Core
 
                 Console.WriteLine("Copying....");
                 Parallel.ForEach(Directory.GetFiles(dirPath), filePath =>
-                {              
+                {
                     string currentFile = Path.GetFileName(filePath);
                     pBAmazonS3.SaveObject(filePath, string.Format(@"{0}/{1}", currentKey, currentFile));
                 });
@@ -38,7 +38,7 @@ namespace replicationToAmazonS3.Core
                 Console.WriteLine("Copying....");
                 foreach (string filePath in Directory.GetFiles(dirPath))
                 {
-                    string currentFile = Path.GetFileName(filePath); 
+                    string currentFile = Path.GetFileName(filePath);
                     pBAmazonS3.SaveObject(filePath, string.Format(@"{0}/{1}", currentKey, currentFile));
                     Console.WriteLine(string.Format("File {0} copied", Path.GetFileName(filePath)));
                 }
