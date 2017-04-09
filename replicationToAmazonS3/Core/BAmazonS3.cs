@@ -36,7 +36,7 @@ namespace replicationToAmazonS3.Core
             _bucketname = pbucketname;
             _s3TransferAccelerationEndPoint = _s3TransferAccelerationEndPoint.Replace("{bucketName}", _bucketname);
             AmazonS3Config config = new AmazonS3Config();
-            config.ServiceURL = pRegion ?? ConfigurationManager.AppSettings["AWSRegion"];
+            config.ServiceURL = pRegion ?? ConfigurationManager.AppSettings["AWSRegion"]; 
         }
 
         public string BucketName
@@ -51,11 +51,11 @@ namespace replicationToAmazonS3.Core
             try
             {
 
-                using (var client = Amazon.AWSClientFactory.CreateAmazonS3Client(_awsAccessKey, _awsSecretAccessKey))
+                using (var client = new AmazonS3Client(_awsAccessKey, _awsSecretAccessKey))
                 {
                     PutObjectRequest request = new PutObjectRequest();
-                    request.BucketName = _bucketname;
-                    request.Key = _isS3TransferAccelerationActived ? _s3TransferAccelerationEndPoint : keyname;
+                    request.BucketName = _isS3TransferAccelerationActived ? _s3TransferAccelerationEndPoint : _bucketname; 
+                    request.Key = keyname;
                     request.FilePath = pFilePath;
                     client.PutObject(request);
                 }
@@ -77,7 +77,7 @@ namespace replicationToAmazonS3.Core
         {
             try
             {
-                using (var client = Amazon.AWSClientFactory.CreateAmazonS3Client(_awsAccessKey, _awsSecretAccessKey))
+                using (var client = new AmazonS3Client(_awsAccessKey, _awsSecretAccessKey))
                 {
                     PutObjectRequest request = new PutObjectRequest();
                     request.BucketName = _bucketname;
@@ -106,7 +106,7 @@ namespace replicationToAmazonS3.Core
                 request.BucketName = _bucketname;
                 request.Key = keyname;
 
-                using (var client = Amazon.AWSClientFactory.CreateAmazonS3Client(_awsAccessKey, _awsSecretAccessKey))
+                using (var client = new AmazonS3Client(_awsAccessKey, _awsSecretAccessKey))
                 {
                     client.DeleteObject(request);
                 }

@@ -1,6 +1,7 @@
 ﻿using replicationToAmazonS3.Core;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -8,22 +9,22 @@ using System.Threading.Tasks;
 
 namespace replicationToAmazonS3.ObjectsToReplication
 {
-    public class CompanyFolder : AbstractInterpreter
+    public class ParallelTransfer : AbstractInterpreter
     {
 
-        string fromFolder = @"C:\rootfolder\";
-        string toBucket = "magnadev";
+        string fromFolder = ConfigurationManager.AppSettings["rootFolderName"];
+        string toBucket = ConfigurationManager.AppSettings["bucketName"];
 
         public override string Description()
         {
-            return string.Format("Copy {0} to {1}", fromFolder, toBucket);
+            return string.Format("Parallel Copy {0} to {1}", fromFolder, toBucket);
         }
         public override void Execute(string[] args)
         {
 
             try
-            {
-                Console.WriteLine("Iniciando replicação para o S3");
+            { 
+                Console.WriteLine("Starting file replication to S3"); 
                 Stopwatch stopWatch = new Stopwatch();
                 stopWatch.Start();
                 ReplicationToS3.ReplicationFiles(fromFolder, toBucket);
