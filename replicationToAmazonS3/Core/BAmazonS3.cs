@@ -16,13 +16,15 @@ namespace replicationToAmazonS3.Core
         private string _awsSecretAccessKey;
         private string _bucketname;
         private AmazonS3Config config;
-
+        private bool _isS3TransferAccelerationActived = bool.Parse(ConfigurationManager.AppSettings["S3TransferAcceleration"]);
+        private string _s3TransferAccelerationEndPoint = ConfigurationManager.AppSettings["S3TransferAccelerationEndPoint"];
 
         public BAmazonS3()
         {
             _awsAccessKey = ConfigurationManager.AppSettings["AWSAccessKey"];
             _awsSecretAccessKey = ConfigurationManager.AppSettings["AWSSecretKey"];
             _bucketname = ConfigurationManager.AppSettings["bucketname"];
+            _s3TransferAccelerationEndPoint = _s3TransferAccelerationEndPoint.Replace("{bucketName}", _bucketname);
             config = new AmazonS3Config();
             config.ServiceURL = ConfigurationManager.AppSettings["AWSRegion"];
         }
@@ -32,6 +34,7 @@ namespace replicationToAmazonS3.Core
             _awsAccessKey = pawsAccessKey;
             _awsSecretAccessKey = pawsSecretAccessKey;
             _bucketname = pbucketname;
+            _s3TransferAccelerationEndPoint = _s3TransferAccelerationEndPoint.Replace("{bucketName}", _bucketname);
             AmazonS3Config config = new AmazonS3Config();
             config.ServiceURL = pRegion ?? ConfigurationManager.AppSettings["AWSRegion"];
         }
@@ -47,11 +50,12 @@ namespace replicationToAmazonS3.Core
         {
             try
             {
+
                 using (var client = Amazon.AWSClientFactory.CreateAmazonS3Client(_awsAccessKey, _awsSecretAccessKey))
                 {
                     PutObjectRequest request = new PutObjectRequest();
                     request.BucketName = _bucketname;
-                    request.Key = keyname;
+                    request.Key = _isS3TransferAccelerationActived ? _s3TransferAccelerationEndPoint : keyname;
                     request.FilePath = pFilePath;
                     client.PutObject(request);
                 }

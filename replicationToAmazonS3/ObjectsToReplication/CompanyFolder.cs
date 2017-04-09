@@ -24,13 +24,9 @@ namespace replicationToAmazonS3.ObjectsToReplication
             try
             {
                 Console.WriteLine("Iniciando replicação para o S3");
-
                 Stopwatch stopWatch = new Stopwatch();
                 stopWatch.Start();
-
-
                 ReplicationToS3.ReplicationFiles(fromFolder, toBucket);
-
                 stopWatch.Stop();
                 TimeSpan pElapsedTime = stopWatch.Elapsed;
                 Console.WriteLine(string.Format("Process accomplished --- Elapsed time: {0}h-{1}m-{2}s-{3}ms",
