@@ -27,6 +27,7 @@ namespace replicationToAmazonS3.Core
             _s3TransferAccelerationEndPoint = _s3TransferAccelerationEndPoint.Replace("{bucketName}", _bucketname);
             config = new AmazonS3Config();
             config.ServiceURL = ConfigurationManager.AppSettings["AWSRegion"];
+            config.UseAccelerateEndpoint = _isS3TransferAccelerationActived;
         }
 
         public BAmazonS3(string pawsAccessKey, string pawsSecretAccessKey, string pbucketname, string pRegion = null)
@@ -36,7 +37,8 @@ namespace replicationToAmazonS3.Core
             _bucketname = pbucketname;
             _s3TransferAccelerationEndPoint = _s3TransferAccelerationEndPoint.Replace("{bucketName}", _bucketname);
             AmazonS3Config config = new AmazonS3Config();
-            config.ServiceURL = pRegion ?? ConfigurationManager.AppSettings["AWSRegion"]; 
+            config.ServiceURL = pRegion ?? ConfigurationManager.AppSettings["AWSRegion"];
+            config.UseAccelerateEndpoint = _isS3TransferAccelerationActived; 
         }
 
         public string BucketName
@@ -54,7 +56,7 @@ namespace replicationToAmazonS3.Core
                 using (var client = new AmazonS3Client(_awsAccessKey, _awsSecretAccessKey))
                 {
                     PutObjectRequest request = new PutObjectRequest();
-                    request.BucketName = _isS3TransferAccelerationActived ? _s3TransferAccelerationEndPoint : _bucketname; 
+                    request.BucketName = _bucketname; 
                     request.Key = keyname;
                     request.FilePath = pFilePath;
                     client.PutObject(request);
