@@ -12,8 +12,9 @@ namespace replicationToAmazonS3.ObjectsToReplication
     public class NonParallelTransfer : AbstractInterpreter
     {
 
-        string fromFolder = ConfigurationManager.AppSettings["rootFolderName"];
-        string toBucket = ConfigurationManager.AppSettings["bucketName"];
+        string fromFolder = ConfigurationManager.AppSettings["RootFolderName"];
+        string toBucket = ConfigurationManager.AppSettings["BucketName"];
+        bool copyEmptyFolders = ConfigurationManager.AppSettings["CopyEmptyFolders"].ToBoolean();
 
         public override string Description()
         {
@@ -30,7 +31,7 @@ namespace replicationToAmazonS3.ObjectsToReplication
                 stopWatch.Start();
 
 
-                ReplicationToS3.ReplicationFiles(fromFolder, toBucket, false);
+                ReplicationToS3.ReplicationFiles(fromFolder, toBucket, copyEmptyFolders, false);
 
                 stopWatch.Stop();
                 TimeSpan pElapsedTime = stopWatch.Elapsed;

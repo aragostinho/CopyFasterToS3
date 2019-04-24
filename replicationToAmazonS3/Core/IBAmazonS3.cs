@@ -11,6 +11,6 @@ namespace replicationToAmazonS3.Core
     {
         void SaveObject(Stream pObject, string keyname);
         void DeleteObject(string keyname);
-
+        void CreateKeyName(string keyname);
     }
 }

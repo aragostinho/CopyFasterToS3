@@ -35,5 +35,25 @@ namespace System
 
             return returnText;
         }
+
+        public static bool IsNullOrEmpty(this string pString)
+        {
+            return string.IsNullOrEmpty(pString);
+        }
+
+        public static bool ToBoolean(this string text)
+        {
+            if (text.IsNullOrEmpty())
+                return false;
+
+            bool parsedToBool = false;
+            var result = bool.TryParse(text, out parsedToBool);
+
+            if (parsedToBool == false)
+                return false;
+
+            return result;
+        }
+
     }
 }

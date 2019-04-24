@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using Amazon.S3.IO;
 
 namespace replicationToAmazonS3.Core
 {
@@ -23,7 +24,7 @@ namespace replicationToAmazonS3.Core
         {
             _awsAccessKey = ConfigurationManager.AppSettings["AWSAccessKey"];
             _awsSecretAccessKey = ConfigurationManager.AppSettings["AWSSecretKey"];
-            _bucketname = ConfigurationManager.AppSettings["bucketname"];
+            _bucketname = ConfigurationManager.AppSettings["Bucketname"];
             _s3TransferAccelerationEndPoint = _s3TransferAccelerationEndPoint.Replace("{bucketName}", _bucketname);
             config = new AmazonS3Config();
             config.ServiceURL = ConfigurationManager.AppSettings["AWSRegion"];
@@ -125,6 +126,29 @@ namespace replicationToAmazonS3.Core
             }
         }
 
+
+        public void CreateKeyName(string keyname)
+        {
+            try
+            {
+                using (var client = new AmazonS3Client(_awsAccessKey, _awsSecretAccessKey))
+                {
+                    S3DirectoryInfo directory = new S3DirectoryInfo(client, _bucketname, keyname); 
+                    directory.Create();
+                }
+
+            }
+            catch (AmazonS3Exception amazonS3Exception)
+            {
+                if (amazonS3Exception.ErrorCode != null &&
+                    (amazonS3Exception.ErrorCode.Equals("InvalidAccessKeyId") ||
+                    amazonS3Exception.ErrorCode.Equals("InvalidSecurity")))
+                {
+                    throw new Exception("Please check the provided AWS Credentials. If you haven't signed up for Amazon S3, please visit http://aws.amazon.com/s3");
+                }
+                throw new Exception(string.Format("An error occurred with the message '{0}' when writing an object", amazonS3Exception.Message));
+            }
+        }
 
 
 
