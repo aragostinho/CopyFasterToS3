@@ -59,14 +59,14 @@ namespace replicationToAmazonS3.Core
                 ClassicRecursive(dirPath, pBAmazonS3, cleanPath);
             }
         }
-        public static void ReplicationFiles(string localPath, string bucketName, bool copyEmptyFolders, bool usingParallel = true)
+        public static void ReplicationFiles(string localPath, string bucketName, string keyName, bool copyEmptyFolders, bool usingParallel = true)
         {
             string AWSSecretKey = ConfigurationManager.AppSettings["AWSSecretKey"];
             string AWSAccessKey = ConfigurationManager.AppSettings["AWSAccessKey"];
 
             _copyEmptyFolders = copyEmptyFolders;
 
-            BAmazonS3 oBAmazonS3 = new BAmazonS3(AWSAccessKey, AWSSecretKey, bucketName);
+            BAmazonS3 oBAmazonS3 = new BAmazonS3(AWSAccessKey, AWSSecretKey, bucketName, keyName);
             Console.WriteLine("Starting to copy local files from '{0}' to '{1}' bucket", localPath, bucketName);
 
             if (usingParallel)

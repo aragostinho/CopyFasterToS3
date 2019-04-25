@@ -13,12 +13,13 @@ namespace replicationToAmazonS3.ObjectsToReplication
     {
 
         string fromFolder = ConfigurationManager.AppSettings["RootFolderName"];
-        string toBucket = ConfigurationManager.AppSettings["BucketName"];
+        string bucketName = ConfigurationManager.AppSettings["BucketName"];
+        string keyName = ConfigurationManager.AppSettings["KeyName"];
         bool copyEmptyFolders = ConfigurationManager.AppSettings["CopyEmptyFolders"].ToBoolean();
 
         public override string Description()
         {
-            return string.Format("NonParallel Copy {0} to {1}", fromFolder, toBucket);
+            return string.Format("NonParallel Copy {0} to {1}", fromFolder, bucketName);
         }
         public override void Execute(string[] args)
         {
@@ -31,7 +32,7 @@ namespace replicationToAmazonS3.ObjectsToReplication
                 stopWatch.Start();
 
 
-                ReplicationToS3.ReplicationFiles(fromFolder, toBucket, copyEmptyFolders, false);
+                ReplicationToS3.ReplicationFiles(fromFolder, bucketName, keyName, copyEmptyFolders, false);
 
                 stopWatch.Stop();
                 TimeSpan pElapsedTime = stopWatch.Elapsed;

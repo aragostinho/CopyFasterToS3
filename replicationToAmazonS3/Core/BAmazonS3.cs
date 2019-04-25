@@ -14,40 +14,47 @@ namespace replicationToAmazonS3.Core
     public class BAmazonS3 : IBAmazonS3
     {
         private string _awsAccessKey;
-        private string _awsSecretAccessKey;
-        private string _bucketname;
+        private string _awsSecretAccessKey; 
         private AmazonS3Config config;
         private bool _isS3TransferAccelerationActived = bool.Parse(ConfigurationManager.AppSettings["S3TransferAcceleration"]);
         private string _s3TransferAccelerationEndPoint = ConfigurationManager.AppSettings["S3TransferAccelerationEndPoint"];
+
+
+        public string BucketName
+        {
+            get;
+            set;
+        }
+
+        public string KeyName
+        {
+            get;
+            set;
+        }
 
         public BAmazonS3()
         {
             _awsAccessKey = ConfigurationManager.AppSettings["AWSAccessKey"];
             _awsSecretAccessKey = ConfigurationManager.AppSettings["AWSSecretKey"];
-            _bucketname = ConfigurationManager.AppSettings["Bucketname"];
-            _s3TransferAccelerationEndPoint = _s3TransferAccelerationEndPoint.Replace("{bucketName}", _bucketname);
+            this.BucketName = ConfigurationManager.AppSettings["Bucketname"];
+            _s3TransferAccelerationEndPoint = _s3TransferAccelerationEndPoint.Replace("{bucketName}", this.BucketName);
             config = new AmazonS3Config();
             config.ServiceURL = ConfigurationManager.AppSettings["AWSRegion"];
             config.UseAccelerateEndpoint = _isS3TransferAccelerationActived;
         }
 
-        public BAmazonS3(string pawsAccessKey, string pawsSecretAccessKey, string pbucketname, string pRegion = null)
+        public BAmazonS3(string pAwsAccessKey, string pAwsSecretAccessKey, string pBucketname, string pKeyName = null, string pRegion = null)
         {
-            _awsAccessKey = pawsAccessKey;
-            _awsSecretAccessKey = pawsSecretAccessKey;
-            _bucketname = pbucketname;
-            _s3TransferAccelerationEndPoint = _s3TransferAccelerationEndPoint.Replace("{bucketName}", _bucketname);
+            _awsAccessKey = pAwsAccessKey;
+            _awsSecretAccessKey = pAwsSecretAccessKey;
+            this.BucketName = pBucketname;
+            this.KeyName = pKeyName;
+            _s3TransferAccelerationEndPoint = _s3TransferAccelerationEndPoint.Replace("{bucketName}", this.BucketName);
             AmazonS3Config config = new AmazonS3Config();
             config.ServiceURL = pRegion ?? ConfigurationManager.AppSettings["AWSRegion"];
             config.UseAccelerateEndpoint = _isS3TransferAccelerationActived; 
         }
-
-        public string BucketName
-        {
-            get { return _bucketname; }
-        }
-
-
+          
 
         public void SaveObject(string pFilePath, string keyname)
         {
@@ -57,8 +64,8 @@ namespace replicationToAmazonS3.Core
                 using (var client = new AmazonS3Client(_awsAccessKey, _awsSecretAccessKey))
                 {
                     PutObjectRequest request = new PutObjectRequest();
-                    request.BucketName = _bucketname; 
-                    request.Key = keyname;
+                    request.BucketName = this.BucketName;
+                    request.Key = keyname.ToFullS3KeyName(this.KeyName);
                     request.FilePath = pFilePath;
                     client.PutObject(request);
                 }
@@ -83,8 +90,8 @@ namespace replicationToAmazonS3.Core
                 using (var client = new AmazonS3Client(_awsAccessKey, _awsSecretAccessKey))
                 {
                     PutObjectRequest request = new PutObjectRequest();
-                    request.BucketName = _bucketname;
-                    request.Key = keyname;
+                    request.BucketName = this.BucketName;
+                    request.Key = keyname.ToFullS3KeyName(this.KeyName);
                     request.InputStream = pObject;
                     client.PutObject(request);
                 }
@@ -101,13 +108,14 @@ namespace replicationToAmazonS3.Core
                 throw new Exception(string.Format("An error occurred with the message '{0}' when writing an object", amazonS3Exception.Message));
             }
         }
+
         public void DeleteObject(string keyname)
         {
             try
             {
                 DeleteObjectRequest request = new DeleteObjectRequest();
-                request.BucketName = _bucketname;
-                request.Key = keyname;
+                request.BucketName = this.BucketName;
+                request.Key = keyname.ToFullS3KeyName(this.KeyName);
 
                 using (var client = new AmazonS3Client(_awsAccessKey, _awsSecretAccessKey))
                 {
@@ -126,14 +134,13 @@ namespace replicationToAmazonS3.Core
             }
         }
 
-
         public void CreateKeyName(string keyname)
         {
             try
             {
                 using (var client = new AmazonS3Client(_awsAccessKey, _awsSecretAccessKey))
                 {
-                    S3DirectoryInfo directory = new S3DirectoryInfo(client, _bucketname, keyname); 
+                    S3DirectoryInfo directory = new S3DirectoryInfo(client, this.BucketName, keyname.ToFullS3KeyName(this.KeyName)); 
                     directory.Create();
                 }
 

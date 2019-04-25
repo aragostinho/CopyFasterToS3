@@ -13,12 +13,13 @@ namespace replicationToAmazonS3.ObjectsToReplication
     {
 
         string fromFolder = ConfigurationManager.AppSettings["RootFolderName"];
-        string toBucket = ConfigurationManager.AppSettings["BucketName"];
+        string bucketName = ConfigurationManager.AppSettings["BucketName"];
+        string keyName    = ConfigurationManager.AppSettings["KeyName"];
         bool copyEmptyFolders = ConfigurationManager.AppSettings["CopyEmptyFolders"].ToBoolean();
 
         public override string Description()
         {
-            return string.Format("Parallel Copy {0} to {1}", fromFolder, toBucket);
+            return string.Format("Parallel Copy {0} to {1}", fromFolder, bucketName);
         }
         public override void Execute(string[] args)
         {
@@ -28,7 +29,7 @@ namespace replicationToAmazonS3.ObjectsToReplication
                 Console.WriteLine("Starting file replication to S3"); 
                 Stopwatch stopWatch = new Stopwatch();
                 stopWatch.Start();
-                ReplicationToS3.ReplicationFiles(fromFolder, toBucket, copyEmptyFolders);
+                ReplicationToS3.ReplicationFiles(fromFolder, bucketName, keyName, copyEmptyFolders);
                 stopWatch.Stop();
                 TimeSpan pElapsedTime = stopWatch.Elapsed;
                 Console.WriteLine(string.Format("Process accomplished --- Elapsed time: {0}h-{1}m-{2}s-{3}ms",

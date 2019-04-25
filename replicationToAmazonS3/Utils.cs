@@ -19,17 +19,30 @@ namespace System
         public static string RemoveRootUnit(this string text)
         {
             if (text.Contains(@":\"))
-                return text.Substring(2, text.Length-2);
+                return text.Substring(2, text.Length - 2);
 
             return text;
         }
 
+
+        public static string ToFullS3KeyName(this string keyname, string keyNameDestination)
+        {
+            if (keyname.IsNullOrEmpty())
+                return string.Empty;
+
+            if (keyNameDestination.IsNullOrEmpty())
+                return keyname;
+
+            return $"{keyNameDestination}/{keyname}";
+             
+        }
+
         public static string ToS3KeyName(this string text)
         {
-            string returnText = string.Empty; 
+            string returnText = string.Empty;
 
             if (text.StartsWith(@"\"))
-                returnText = text.Substring(1, text.Length-1);
+                returnText = text.Substring(1, text.Length - 1);
 
             returnText = returnText.Replace(@"\", "/");
 
