@@ -14,7 +14,7 @@ namespace replicationToAmazonS3.ObjectsToReplication
 
         string fromFolder = ConfigurationManager.AppSettings["RootFolderName"];
         string bucketName = ConfigurationManager.AppSettings["BucketName"];
-        string keyName = ConfigurationManager.AppSettings["KeyName"];
+        string keyName = ConfigurationManager.AppSettings["KeyName"]; 
         bool copyEmptyFolders = ConfigurationManager.AppSettings["CopyEmptyFolders"].ToBoolean();
 
         public override string Description()

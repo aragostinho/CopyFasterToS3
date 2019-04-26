@@ -54,6 +54,11 @@ namespace System
             return string.IsNullOrEmpty(pString);
         }
 
+        public static int ToInt(this string pString)
+        {
+            return int.Parse(pString);
+        }
+
         public static bool ToBoolean(this string text)
         {
             if (text.IsNullOrEmpty())

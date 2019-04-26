@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace replicationToAmazonS3
 {
     public class Program
-    {
+    { 
 
         public static Dictionary<int, AbstractInterpreter> _ActionList;
         static void Main(string[] args)

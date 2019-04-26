@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -10,8 +11,22 @@ namespace replicationToAmazonS3.Core
 {
     public static class ReplicationToS3
     {
+        private static Stopwatch _stopwatch;
+        private static bool _copyEmptyFolders = false; 
+        private static int recycleBufferIntMinutes = ConfigurationManager.AppSettings["RecycleBufferInMinutes"].ToInt();
 
-        private static bool _copyEmptyFolders = false;
+        private static void ReleaseBuffer()
+        {
+            var elapsedTime = _stopwatch.Elapsed.Minutes;
+            if (elapsedTime >= recycleBufferIntMinutes)
+            {
+                Console.Clear();
+                GC.Collect();
+
+                _stopwatch = new Stopwatch();
+                _stopwatch.Start();
+            }
+        }
 
         private static void ParallelRecursive(string localDir, BAmazonS3 pBAmazonS3, string cleanPath = null)
         {
@@ -25,8 +40,13 @@ namespace replicationToAmazonS3.Core
                 Parallel.ForEach(files, filePath =>
                 {
                     string currentFile = Path.GetFileName(filePath);
+
                     pBAmazonS3.SaveObject(filePath, string.Format(@"{0}/{1}", currentKey, currentFile));
+
+                    ReleaseBuffer();
+
                     Console.WriteLine(string.Format("File {0} copied", Path.GetFileName(filePath)));
+
                 });
 
                 if (_copyEmptyFolders && files.Count() == 0)
@@ -49,7 +69,11 @@ namespace replicationToAmazonS3.Core
                 foreach (string filePath in files)
                 {
                     string currentFile = Path.GetFileName(filePath);
+
                     pBAmazonS3.SaveObject(filePath, string.Format(@"{0}/{1}", currentKey, currentFile));
+
+                    ReleaseBuffer();
+
                     Console.WriteLine(string.Format("File {0} copied", Path.GetFileName(filePath)));
                 }
 
@@ -59,12 +83,15 @@ namespace replicationToAmazonS3.Core
                 ClassicRecursive(dirPath, pBAmazonS3, cleanPath);
             }
         }
+         
         public static void ReplicationFiles(string localPath, string bucketName, string keyName, bool copyEmptyFolders, bool usingParallel = true)
         {
             string AWSSecretKey = ConfigurationManager.AppSettings["AWSSecretKey"];
             string AWSAccessKey = ConfigurationManager.AppSettings["AWSAccessKey"];
 
             _copyEmptyFolders = copyEmptyFolders;
+            _stopwatch = new Stopwatch();
+            _stopwatch.Start();
 
             BAmazonS3 oBAmazonS3 = new BAmazonS3(AWSAccessKey, AWSSecretKey, bucketName, keyName);
             Console.WriteLine("Starting to copy local files from '{0}' to '{1}' bucket", localPath, bucketName);
