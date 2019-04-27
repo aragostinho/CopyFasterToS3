@@ -16,6 +16,18 @@ namespace System
 
             return text;
         }
+
+        public static string RemoveLastFolder(this string text)
+        {
+            text = text.RemoveLastSlash();
+
+            if (text.IndexOf(@"\") == -1)
+                return string.Empty;
+
+            var fullPathWithoutLastFolder = text.Substring(0,text.LastIndexOf(@"\")+1); 
+
+            return fullPathWithoutLastFolder;
+        }
         public static string RemoveRootUnit(this string text)
         {
             if (text.Contains(@":\"))
@@ -34,7 +46,7 @@ namespace System
                 return keyname;
 
             return $"{keyNameDestination}/{keyname}";
-             
+
         }
 
         public static string ToS3KeyName(this string text)
@@ -71,6 +83,17 @@ namespace System
                 return false;
 
             return result;
+        }
+
+        public static string[] ToFolderList(this string text)
+        {
+            if (text.IsNullOrEmpty())
+                return null;
+
+            if (text.IndexOf(',') == -1)
+                return null;
+
+            return text.Split(',');
         }
 
     }

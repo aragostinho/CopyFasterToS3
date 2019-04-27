@@ -13,7 +13,7 @@ namespace replicationToAmazonS3.Core
     {
         private static Stopwatch _stopwatch;
         private static bool _copyEmptyFolders = false; 
-        private static int recycleBufferIntMinutes = ConfigurationManager.AppSettings["RecycleBufferInMinutes"].ToInt();
+        private static int recycleBufferIntMinutes = ConfigurationManager.AppSettings["RecycleBufferInMinutes"].ToInt(); 
 
         private static void ReleaseBuffer()
         {
@@ -30,61 +30,68 @@ namespace replicationToAmazonS3.Core
 
         private static void ParallelRecursive(string localDir, BAmazonS3 pBAmazonS3, string cleanPath = null)
         {
-            Parallel.ForEach(Directory.GetDirectories(localDir), dirPath =>
+            if (Directory.Exists(localDir))
             {
-                string currentFolder = Path.GetFileName(dirPath);
-                string currentKey = cleanPath != null ? dirPath.Replace(cleanPath, string.Empty).Replace(@"\", "/")
-                : dirPath.Replace(@"\", "/");
-
-                var files = Directory.GetFiles(dirPath);
-                Parallel.ForEach(files, filePath =>
+                Parallel.ForEach(Directory.GetDirectories(localDir), dirPath =>
                 {
-                    string currentFile = Path.GetFileName(filePath);
-
-                    pBAmazonS3.SaveObject(filePath, string.Format(@"{0}/{1}", currentKey, currentFile));
-
-                    ReleaseBuffer();
-
-                    Console.WriteLine(string.Format("File {0} copied", Path.GetFileName(filePath)));
-
-                });
-
-                if (_copyEmptyFolders && files.Count() == 0)
-                    pBAmazonS3.CreateKeyName($@"{currentKey}");
-
-
-                ParallelRecursive(dirPath, pBAmazonS3, cleanPath);
-            });
-        }
-        public static void ClassicRecursive(string localDir, BAmazonS3 pBAmazonS3, string cleanPath = null)
-        {
-            foreach (string dirPath in Directory.GetDirectories(localDir))
-            {
-                string currentFolder = Path.GetFileName(dirPath);
-                string currentKey = cleanPath != null ? dirPath.Replace(cleanPath, string.Empty).Replace(@"\", "/")
+                    string currentFolder = Path.GetFileName(dirPath);
+                    string currentKey = cleanPath != null ? dirPath.Replace(cleanPath, string.Empty).Replace(@"\", "/")
                     : dirPath.Replace(@"\", "/");
 
-                var files = Directory.GetFiles(dirPath);
+                    var files = Directory.GetFiles(dirPath);
+                    Parallel.ForEach(files, filePath =>
+                    {
+                        string currentFile = Path.GetFileName(filePath);
 
-                foreach (string filePath in files)
+                        pBAmazonS3.SaveObject(filePath, string.Format(@"{0}/{1}", currentKey, currentFile));
+
+                        ReleaseBuffer();
+
+                        Console.WriteLine(string.Format("File {0} copied", Path.GetFileName(filePath)));
+
+                    });
+
+                    if (_copyEmptyFolders && files.Count() == 0)
+                        pBAmazonS3.CreateKeyName($@"{currentKey}");
+
+
+                    ParallelRecursive(dirPath, pBAmazonS3, cleanPath);
+                });
+            }
+        }
+
+        public static void ClassicRecursive(string localDir, BAmazonS3 pBAmazonS3, string cleanPath = null)
+        {
+            if (Directory.Exists(localDir))
+            {
+                foreach (string dirPath in Directory.GetDirectories(localDir))
                 {
-                    string currentFile = Path.GetFileName(filePath);
+                    string currentFolder = Path.GetFileName(dirPath);
+                    string currentKey = cleanPath != null ? dirPath.Replace(cleanPath, string.Empty).Replace(@"\", "/")
+                        : dirPath.Replace(@"\", "/");
 
-                    pBAmazonS3.SaveObject(filePath, string.Format(@"{0}/{1}", currentKey, currentFile));
+                    var files = Directory.GetFiles(dirPath);
 
-                    ReleaseBuffer();
+                    foreach (string filePath in files)
+                    {
+                        string currentFile = Path.GetFileName(filePath);
 
-                    Console.WriteLine(string.Format("File {0} copied", Path.GetFileName(filePath)));
+                        pBAmazonS3.SaveObject(filePath, string.Format(@"{0}/{1}", currentKey, currentFile));
+
+                        ReleaseBuffer();
+
+                        Console.WriteLine(string.Format("File {0} copied", Path.GetFileName(filePath)));
+                    }
+
+                    if (_copyEmptyFolders && files.Count() == 0)
+                        pBAmazonS3.CreateKeyName($@"{currentKey}");
+
+                    ClassicRecursive(dirPath, pBAmazonS3, cleanPath);
                 }
-
-                if (_copyEmptyFolders && files.Count() == 0)
-                    pBAmazonS3.CreateKeyName($@"{currentKey}");
-
-                ClassicRecursive(dirPath, pBAmazonS3, cleanPath);
             }
         }
          
-        public static void ReplicationFiles(string localPath, string bucketName, string keyName, bool copyEmptyFolders, bool usingParallel = true)
+        public static void ReplicationFiles(string localPath, string[] localPathList, string bucketName, string keyName, bool copyEmptyFolders, bool usingParallel = true)
         {
             string AWSSecretKey = ConfigurationManager.AppSettings["AWSSecretKey"];
             string AWSAccessKey = ConfigurationManager.AppSettings["AWSAccessKey"];
@@ -96,11 +103,25 @@ namespace replicationToAmazonS3.Core
             BAmazonS3 oBAmazonS3 = new BAmazonS3(AWSAccessKey, AWSSecretKey, bucketName, keyName);
             Console.WriteLine("Starting to copy local files from '{0}' to '{1}' bucket", localPath, bucketName);
 
-            if (usingParallel)
-                ParallelRecursive(localPath, oBAmazonS3, localPath);
+            if (localPathList == null)
+            {
+                if (usingParallel)
+                    ParallelRecursive(localPath, oBAmazonS3, localPath);
+                else
+                    ClassicRecursive(localPath, oBAmazonS3, localPath);
+            }
             else
-                ClassicRecursive(localPath, oBAmazonS3, localPath);
+            {
+                Parallel.ForEach(localPathList, directoryPath =>
+                {
+                    if (usingParallel)
+                        ParallelRecursive(directoryPath, oBAmazonS3, directoryPath.RemoveLastFolder());
+                    else
+                        ClassicRecursive(directoryPath, oBAmazonS3, directoryPath.RemoveLastFolder());
 
+                });
+                 
+            }
             Console.WriteLine("***Replication finished**");
         }
 

@@ -12,10 +12,11 @@ namespace replicationToAmazonS3.ObjectsToReplication
     public class ParallelTransfer : AbstractInterpreter
     {
 
-        string fromFolder = ConfigurationManager.AppSettings["RootFolderName"];
-        string bucketName = ConfigurationManager.AppSettings["BucketName"];
-        string keyName    = ConfigurationManager.AppSettings["KeyName"];
-        bool copyEmptyFolders = ConfigurationManager.AppSettings["CopyEmptyFolders"].ToBoolean();
+        private string fromFolder = ConfigurationManager.AppSettings["RootFolderName"];        
+        private string[] fromFolderList = ConfigurationManager.AppSettings["RootListFolderName"].ToFolderList();
+        private string bucketName = ConfigurationManager.AppSettings["BucketName"];
+        private string keyName    = ConfigurationManager.AppSettings["KeyName"];
+        private bool copyEmptyFolders = ConfigurationManager.AppSettings["CopyEmptyFolders"].ToBoolean();
 
         public override string Description()
         {
@@ -29,7 +30,9 @@ namespace replicationToAmazonS3.ObjectsToReplication
                 Console.WriteLine("Starting file replication to S3"); 
                 Stopwatch stopWatch = new Stopwatch();
                 stopWatch.Start();
-                ReplicationToS3.ReplicationFiles(fromFolder, bucketName, keyName, copyEmptyFolders);
+
+                ReplicationToS3.ReplicationFiles(fromFolder, fromFolderList, bucketName, keyName, copyEmptyFolders);
+
                 stopWatch.Stop();
                 TimeSpan pElapsedTime = stopWatch.Elapsed;
                 Console.WriteLine(string.Format("Process accomplished --- Elapsed time: {0}h-{1}m-{2}s-{3}ms",
