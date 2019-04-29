@@ -12,19 +12,22 @@ namespace replicationToAmazonS3.Core
     public static class ReplicationToS3
     {
         private static Stopwatch _stopwatch;
-        private static bool _copyEmptyFolders = false; 
-        private static int recycleBufferIntMinutes = ConfigurationManager.AppSettings["RecycleBufferInMinutes"].ToInt(); 
+        private static bool _copyEmptyFolders = false;
+        private static int recycleBufferIntMinutes = ConfigurationManager.AppSettings["RecycleBufferInMinutes"].ToInt();
+        private static ErrorSaveObjectResult errorResult = null;
 
         private static void ReleaseBuffer()
         {
             var elapsedTime = _stopwatch.Elapsed.Minutes;
             if (elapsedTime >= recycleBufferIntMinutes)
             {
+
                 Console.Clear();
                 GC.Collect();
 
                 _stopwatch = new Stopwatch();
                 _stopwatch.Start();
+
             }
         }
 
@@ -41,13 +44,19 @@ namespace replicationToAmazonS3.Core
                     var files = Directory.GetFiles(dirPath);
                     Parallel.ForEach(files, filePath =>
                     {
-                        string currentFile = Path.GetFileName(filePath);
+                        string currentFile = Path.GetFileName(filePath); 
 
-                        pBAmazonS3.SaveObject(filePath, string.Format(@"{0}/{1}", currentKey, currentFile));
-
+                        pBAmazonS3.SaveObject(filePath, string.Format(@"{0}/{1}", currentKey, currentFile), out errorResult);
+                        
                         ReleaseBuffer();
 
-                        Console.WriteLine(string.Format("File {0} copied", Path.GetFileName(filePath)));
+                        if (errorResult == null)
+                            Console.WriteLine(string.Format("File {0} copied", Path.GetFileName(filePath)));
+                        else
+                        {
+                            Console.WriteLine(string.Format("Error copying file {0}", Path.GetFileName(filePath)));
+                            Utils.CatchErrorLog(errorResult, currentFile, currentKey);
+                        }
 
                     });
 
@@ -75,22 +84,31 @@ namespace replicationToAmazonS3.Core
                     foreach (string filePath in files)
                     {
                         string currentFile = Path.GetFileName(filePath);
-
-                        pBAmazonS3.SaveObject(filePath, string.Format(@"{0}/{1}", currentKey, currentFile));
+                          
+                        pBAmazonS3.SaveObject(filePath, string.Format(@"{0}/{1}", currentKey, currentFile), out errorResult);
 
                         ReleaseBuffer();
 
-                        Console.WriteLine(string.Format("File {0} copied", Path.GetFileName(filePath)));
+                        if (errorResult == null)
+                            Console.WriteLine(string.Format("File {0} copied", Path.GetFileName(filePath)));
+                        else
+                        {
+                            Console.WriteLine(string.Format("Error copying file {0}", Path.GetFileName(filePath)));
+                            Utils.CatchErrorLog(errorResult, currentFile, currentKey);
+                        }
+
+
                     }
 
                     if (_copyEmptyFolders && files.Count() == 0)
                         pBAmazonS3.CreateKeyName($@"{currentKey}");
 
                     ClassicRecursive(dirPath, pBAmazonS3, cleanPath);
+
                 }
             }
         }
-         
+
         public static void ReplicationFiles(string localPath, string[] localPathList, string bucketName, string keyName, bool copyEmptyFolders, bool usingParallel = true)
         {
             string AWSSecretKey = ConfigurationManager.AppSettings["AWSSecretKey"];
@@ -120,7 +138,7 @@ namespace replicationToAmazonS3.Core
                         ClassicRecursive(directoryPath, oBAmazonS3, directoryPath.RemoveLastFolder());
 
                 });
-                 
+
             }
             Console.WriteLine("***Replication finished**");
         }

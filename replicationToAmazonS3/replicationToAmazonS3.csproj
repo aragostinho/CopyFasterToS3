@@ -86,6 +86,7 @@
     <Compile Include="Core\BAmazonS3.cs" />
     <Compile Include="Core\IBAmazonS3.cs" />
     <Compile Include="Core\ReplicationToS3.cs" />
+    <Compile Include="Core\ErrorSaveObjectResult.cs" />
     <Compile Include="ObjectsToReplication\NonParallelTransfer.cs" />
     <Compile Include="ObjectsToReplication\ParallelTransfer.cs" />
     <Compile Include="ObjectsToReplication\ReplicationFactory.cs" />

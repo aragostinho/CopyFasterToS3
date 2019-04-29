@@ -14,7 +14,7 @@ namespace replicationToAmazonS3.Core
     public class BAmazonS3 : IBAmazonS3
     {
         private string _awsAccessKey;
-        private string _awsSecretAccessKey; 
+        private string _awsSecretAccessKey;
         private AmazonS3Config config;
         private bool _isS3TransferAccelerationActived = bool.Parse(ConfigurationManager.AppSettings["S3TransferAcceleration"]);
         private string _s3TransferAccelerationEndPoint = ConfigurationManager.AppSettings["S3TransferAccelerationEndPoint"];
@@ -52,12 +52,26 @@ namespace replicationToAmazonS3.Core
             _s3TransferAccelerationEndPoint = _s3TransferAccelerationEndPoint.Replace("{bucketName}", this.BucketName);
             AmazonS3Config config = new AmazonS3Config();
             config.ServiceURL = pRegion ?? ConfigurationManager.AppSettings["AWSRegion"];
-            config.UseAccelerateEndpoint = _isS3TransferAccelerationActived; 
+            config.UseAccelerateEndpoint = _isS3TransferAccelerationActived;
         }
-          
 
-        public void SaveObject(string pFilePath, string keyname)
+        public void SaveObject(string filePath, string keyname)
+        {  
+            using (var client = new AmazonS3Client(_awsAccessKey, _awsSecretAccessKey))
+            {
+                PutObjectRequest request = new PutObjectRequest();
+                request.BucketName = this.BucketName;
+                request.Key = keyname.ToFullS3KeyName(this.KeyName);
+                request.FilePath = filePath;
+                client.PutObject(request);
+            } 
+        }
+
+
+        public void SaveObject(string filePath, string keyname, out ErrorSaveObjectResult result)
         {
+            result = null;
+
             try
             {
 
@@ -66,25 +80,26 @@ namespace replicationToAmazonS3.Core
                     PutObjectRequest request = new PutObjectRequest();
                     request.BucketName = this.BucketName;
                     request.Key = keyname.ToFullS3KeyName(this.KeyName);
-                    request.FilePath = pFilePath;
+                    request.FilePath = filePath;
                     client.PutObject(request);
                 }
 
             }
             catch (AmazonS3Exception amazonS3Exception)
             {
-                if (amazonS3Exception.ErrorCode != null &&
-                    (amazonS3Exception.ErrorCode.Equals("InvalidAccessKeyId") ||
-                    amazonS3Exception.ErrorCode.Equals("InvalidSecurity")))
-                {
-                    throw new Exception("Please check the provided AWS Credentials. If you haven't signed up for Amazon S3, please visit http://aws.amazon.com/s3");
-                }
-                throw new Exception(string.Format("An error occurred with the message '{0}' when writing an object", amazonS3Exception.Message));
+                result = new ErrorSaveObjectResult($"Amazon Exception {amazonS3Exception.Message}", amazonS3Exception, filePath, keyname);
             }
+            catch (Exception exception)
+            {
+                result = new ErrorSaveObjectResult($"SaveObject Exception {exception.Message}", exception, filePath, keyname);
+            }
+
         }
 
-        public void SaveObject(Stream pObject, string keyname)
+        public void SaveObject(Stream pObject, string keyname, out ErrorSaveObjectResult result)
         {
+            result = null;
+
             try
             {
                 using (var client = new AmazonS3Client(_awsAccessKey, _awsSecretAccessKey))
@@ -99,13 +114,11 @@ namespace replicationToAmazonS3.Core
             }
             catch (AmazonS3Exception amazonS3Exception)
             {
-                if (amazonS3Exception.ErrorCode != null &&
-                    (amazonS3Exception.ErrorCode.Equals("InvalidAccessKeyId") ||
-                    amazonS3Exception.ErrorCode.Equals("InvalidSecurity")))
-                {
-                    throw new Exception("Please check the provided AWS Credentials. If you haven't signed up for Amazon S3, please visit http://aws.amazon.com/s3");
-                }
-                throw new Exception(string.Format("An error occurred with the message '{0}' when writing an object", amazonS3Exception.Message));
+                result = new ErrorSaveObjectResult($"Amazon Exception {amazonS3Exception.Message}", amazonS3Exception, pObject, keyname);
+            }
+            catch (Exception exception)
+            {
+                result = new ErrorSaveObjectResult($"SaveObject Exception {exception.Message}", exception, pObject, keyname);
             }
         }
 
@@ -124,13 +137,7 @@ namespace replicationToAmazonS3.Core
             }
             catch (AmazonS3Exception amazonS3Exception)
             {
-                if (amazonS3Exception.ErrorCode != null &&
-                    (amazonS3Exception.ErrorCode.Equals("InvalidAccessKeyId") ||
-                    amazonS3Exception.ErrorCode.Equals("InvalidSecurity")))
-                {
-                    throw new Exception("Please check the provided AWS Credentials. If you haven't signed up for Amazon S3, please visit http://aws.amazon.com/s3");
-                }
-                throw new Exception(string.Format("An error occurred with the message '{0}' when deleting an object", amazonS3Exception.Message));
+                throw new Exception($"Amazon Exception {amazonS3Exception}");
             }
         }
 
@@ -140,20 +147,14 @@ namespace replicationToAmazonS3.Core
             {
                 using (var client = new AmazonS3Client(_awsAccessKey, _awsSecretAccessKey))
                 {
-                    S3DirectoryInfo directory = new S3DirectoryInfo(client, this.BucketName, keyname.ToFullS3KeyName(this.KeyName)); 
+                    S3DirectoryInfo directory = new S3DirectoryInfo(client, this.BucketName, keyname.ToFullS3KeyName(this.KeyName));
                     directory.Create();
                 }
 
             }
             catch (AmazonS3Exception amazonS3Exception)
             {
-                if (amazonS3Exception.ErrorCode != null &&
-                    (amazonS3Exception.ErrorCode.Equals("InvalidAccessKeyId") ||
-                    amazonS3Exception.ErrorCode.Equals("InvalidSecurity")))
-                {
-                    throw new Exception("Please check the provided AWS Credentials. If you haven't signed up for Amazon S3, please visit http://aws.amazon.com/s3");
-                }
-                throw new Exception(string.Format("An error occurred with the message '{0}' when writing an object", amazonS3Exception.Message));
+                throw new Exception($"Amazon Exception {amazonS3Exception}");
             }
         }
 

@@ -38,8 +38,8 @@ namespace replicationToAmazonS3
             }
             catch (Exception oException)
             {
-                Console.WriteLine("Error in {0} at {1}: {2}", DateTime.Now.ToShortDateString(), DateTime.Now.ToShortTimeString(), oException.Message);
-                Console.WriteLine("StackTrace: {0}", oException.StackTrace);
+                Utils.CatchErrorLog(oException);
+                Console.WriteLine("Error: Invalid Key");
                 Console.ReadKey();
             }
 

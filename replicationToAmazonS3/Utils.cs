@@ -1,5 +1,7 @@
-﻿using System;
+﻿using replicationToAmazonS3.Core;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -24,7 +26,7 @@ namespace System
             if (text.IndexOf(@"\") == -1)
                 return string.Empty;
 
-            var fullPathWithoutLastFolder = text.Substring(0,text.LastIndexOf(@"\")+1); 
+            var fullPathWithoutLastFolder = text.Substring(0, text.LastIndexOf(@"\") + 1);
 
             return fullPathWithoutLastFolder;
         }
@@ -94,6 +96,61 @@ namespace System
                 return null;
 
             return text.Split(',');
+        }
+
+
+        public static void CatchErrorLog(Exception exception, string currentFile = null, string currentKeyName = null)
+        {
+            var folderLogs = $@"{AppDomain.CurrentDomain.BaseDirectory}\logs";
+
+            if (!Directory.Exists(folderLogs))
+                Directory.CreateDirectory(folderLogs);
+
+            var log = File.CreateText($@"{folderLogs}\{Guid.NewGuid().ToString()}.txt");
+
+            if (!currentFile.IsNullOrEmpty() && !currentKeyName.IsNullOrEmpty())
+            {
+                log.WriteLine($"FILE OBJECT *****************************");
+                log.WriteLine($"FilePath: {currentFile.ToString()}");
+                log.WriteLine($"FilePath: {currentKeyName.ToString()}");
+            } 
+
+            log.WriteLine($"ERROR DETAILS *****************************");
+            log.WriteLine($"Date: {DateTime.Now.ToString()}");
+            log.WriteLine($"Error message: {exception?.Message}");
+            log.WriteLine($"InnerException: {exception?.InnerException}");
+            log.WriteLine($"Source: {exception?.Source}");
+            log.WriteLine($"TargetSite: {exception?.TargetSite}");
+            log.WriteLine($"StackTrace: {exception?.StackTrace}");
+            log.Close();
+
+        }
+
+        public static void CatchErrorLog(ErrorSaveObjectResult objectResult, string currentFile = null, string currentKeyName = null)
+        {
+            var folderLogs = $@"{AppDomain.CurrentDomain.BaseDirectory}\logs";
+
+            if (!Directory.Exists(folderLogs))
+                Directory.CreateDirectory(folderLogs);
+
+            var log = File.CreateText($@"{folderLogs}\{Guid.NewGuid().ToString()}.txt");
+
+            if (!currentFile.IsNullOrEmpty() && !currentKeyName.IsNullOrEmpty())
+            {
+                log.WriteLine($"FILE OBJECT *****************************");
+                log.WriteLine($"FilePath: {currentFile.ToString()}");
+                log.WriteLine($"FilePath: {currentKeyName.ToString()}");
+            }
+
+            log.WriteLine($"ERROR DETAILS *****************************");
+            log.WriteLine($"Date: {DateTime.Now.ToString()}");
+            log.WriteLine($"Error message: {objectResult?.Message}");
+            log.WriteLine($"InnerException: {objectResult.Exception?.InnerException}");
+            log.WriteLine($"Source: {objectResult.Exception?.Source}");
+            log.WriteLine($"TargetSite: {objectResult.Exception?.TargetSite}");
+            log.WriteLine($"StackTrace: {objectResult.Exception?.StackTrace}");
+            log.Close();
+
         }
 
     }

@@ -50,7 +50,8 @@ namespace replicationToAmazonS3.ObjectsToReplication
             }
             catch (Exception oException)
             {
-                Console.WriteLine("Erro: {0}", oException.Message);
+                Utils.CatchErrorLog(oException);
+                Console.WriteLine("Error: Check output log error");
                 Console.ReadKey();
             }
 
